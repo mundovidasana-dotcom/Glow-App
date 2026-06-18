@@ -10,6 +10,7 @@ import { Sparkles, Soup, Coffee, Apple, Compass, ChevronRight, Star, Heart, Arro
 
 interface DashboardViewProps {
   userName: string;
+  userImage?: string; // Pasamos la foto de forma dinámica
   recipes: Recipe[];
   onSelectCategory: (category: RecipeCategory) => void;
   onSelectRecipe: (recipeId: string) => void;
@@ -38,6 +39,7 @@ const SHIELD_TIPS = [
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   userName,
+  userImage,
   recipes,
   onSelectCategory,
   onSelectRecipe,
@@ -117,8 +119,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
         <div className="w-10 h-10 rounded-full border-2 border-brand-primary overflow-hidden shadow-xs">
           <img 
-            src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150&q=80" 
-            alt="María User Avatar"
+            src={userImage || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80"} 
+            alt={`Avatar de ${userName}`}
             referrerPolicy="no-referrer"
             className="w-full h-full object-cover" 
           />

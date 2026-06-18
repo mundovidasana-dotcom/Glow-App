@@ -768,17 +768,18 @@ export default function App() {
             /* 2. Standard Tab routing workspace */
             <div className="w-full">
               {currentTab === 'home' && (
-                <DashboardView
-                  userName={userProfile.name}
-                  recipes={recipes}
-                  onSelectCategory={(category) => {
-                    setSelectedCategory(category);
-                    setCurrentTab('search');
-                  }}
-                  onSelectRecipe={handleSelectRecipeById}
-                  savedRecipeIds={savedRecipeIds}
-                  onToggleSaveRecipe={handleToggleSaveRecipe}
-                />
+          <DashboardView
+  userName={userProfile.name}
+  userImage={userProfile.image || userProfile.avatarUrl || userProfile.avatar}
+  recipes={recipes}
+  onSelectCategory={(category) => {
+    setSelectedCategory(category);
+    setCurrentTab('search');
+  }}
+  onSelectRecipe={handleSelectRecipeById}
+  savedRecipeIds={savedRecipeIds}
+  onToggleSaveRecipe={handleToggleSaveRecipe}
+/>
               )}
 
               {currentTab === 'search' && (
