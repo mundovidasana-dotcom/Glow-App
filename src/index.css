@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Lato:ital,wght@0,300;0,400;0,700;1,400&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Playfair Display", Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: "Lato", system-ui, -apple-system, sans-serif;
+  --color-brand-bg: #FDFBF9;
+  --color-brand-primary: #D4A373;
+  --color-brand-secondary: #CCD5AE;
+  --color-brand-subdued: #FAEDCD;
+  --color-brand-dark: #1F1F1F;
+  --color-brand-grey: #5E5E5E;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-brand-bg);
+  color: var(--color-brand-dark);
+}
+
+/* Hide scrollbars for beauty in recipes carousel and general panels */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
