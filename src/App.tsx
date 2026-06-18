@@ -488,28 +488,10 @@ export default function App() {
           </nav>
         </div>
 
-        {/* Desktop Role Toggle and details */}
-        <div className="space-y-4 pt-4 border-t border-brand-subdued/40">
-          <div className="bg-brand-bg p-3 rounded-2xl border border-brand-subdued/50 space-y-2">
-            <span className="text-[10px] font-bold text-brand-primary uppercase tracking-widest block">Simulación de Rol</span>
-            <p className="text-[10px] text-brand-grey leading-tight">Alterna roles para experimentar el flujo de aprobación.</p>
-            <div className="flex gap-1.5 bg-white p-1 rounded-lg border border-brand-subdued/30">
-              <button 
-                onClick={() => setUserRole('user')}
-                className={`flex-1 text-[10px] py-1 px-1.5 rounded-md font-bold transition-all cursor-pointer ${userRole === 'user' ? 'bg-[#D4A373] text-white shadow-3xs' : 'text-brand-grey hover:text-brand-dark'}`}
-              >
-                Usuario
-              </button>
-              <button 
-                onClick={() => setUserRole('admin')}
-                className={`flex-1 text-[10px] py-1 px-1.5 rounded-md font-bold transition-all cursor-pointer ${userRole === 'admin' ? 'bg-[#CCD5AE] text-brand-dark shadow-3xs' : 'text-brand-grey hover:text-brand-dark'}`}
-              >
-                Admin (8)
-              </button>
-            </div>
-          </div>
-          <p className="text-[10px] text-brand-grey/70 text-center">Glow Nutrición v2.1 • 2026</p>
-        </div>
+ {/* Footer de versión sin simulación */}
+<div className="pt-4 border-t border-brand-subdued/40">
+  <p className="text-[10px] text-brand-grey/70 text-center">Glow Nutrición v2.1 • 2026</p>
+</div>
       </aside>
 
       {/* ----------------- 2. TABLET DRAWER BAR (Tablet 768px - 1024px) ----------------- */}
@@ -582,17 +564,9 @@ export default function App() {
           </nav>
         </div>
 
-        <div className="flex flex-col items-center gap-3">
-          {/* Quick role-switch for tablet */}
-          <button
-            onClick={() => setUserRole(prev => prev === 'user' ? 'admin' : 'user')}
-            className={`p-2.5 rounded-xl border transition-all cursor-pointer ${userRole === 'admin' ? 'bg-[#CCD5AE]/40 border-[#CCD5AE] text-brand-dark' : 'bg-brand-bg/50 border-brand-subdued text-brand-grey'}`}
-            title={`Alternar a ${userRole === 'user' ? 'Admin' : 'Usuario'}`}
-          >
-            <Shield className="w-4.5 h-4.5" />
-          </button>
-          <img src={userProfile.avatar} alt="User Profile Avatar" className="w-8 h-8 rounded-full object-cover border border-brand-primary" referrerPolicy="no-referrer" />
-        </div>
+      <div className="flex flex-col items-center gap-3">
+  <img src={userProfile.avatar} alt="User Profile Avatar" className="w-8 h-8 rounded-full object-cover border border-brand-primary" referrerPolicy="no-referrer" />
+</div>
       </aside>
 
       {/* ----------------- TABLET SLIDE DRAWER (Tablet Menu) ----------------- */}
