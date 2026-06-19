@@ -113,7 +113,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div>
           <span className="text-[13px] uppercase tracking-widest text-brand-grey font-semibold">Bienvenida a Glow</span>
           <h1 className="font-serif text-3xl font-bold text-brand-dark mt-0.5">
-            {getGreeting()}, {userName.split(' ')[0]}!
+            {getGreeting()}, {(userName || '').split(' ')[0]}!
           </h1>
         </div>
         <div className="w-10 h-10 rounded-full border-2 border-brand-primary overflow-hidden shadow-xs">
@@ -252,7 +252,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="p-4 flex-1 flex flex-col justify-between">
                 <div>
                   <span className="text-[10px] uppercase tracking-wide text-brand-grey font-semibold block mb-1">
-                    {recipe.category} • {recipe.keyNutrient.split(' ')[0] || 'Omega-3'}
+                    {recipe.category} • {(recipe.keyNutrient || '').split(' ')[0] || 'Omega-3'}
                   </span>
                   <h3 className="font-serif font-bold text-sm text-brand-dark leading-snug line-clamp-2">
                     {recipe.title}

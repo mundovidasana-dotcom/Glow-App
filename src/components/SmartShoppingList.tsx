@@ -72,6 +72,7 @@ export const SmartShoppingList: React.FC<SmartShoppingListProps> = ({
   onClearShoppingList,
 }) => {
   // Categorize elements
+const safeList = shoppingList || [];
   const groupedItems: { [category: string]: ShoppingItem[] } = {
     '🥦 Vegetales': [],
     '🥩 Proteínas': [],

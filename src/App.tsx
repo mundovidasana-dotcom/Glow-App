@@ -29,23 +29,26 @@ export default function App() {
   const [onboardingCompleted, setOnboardingCompleted] = useState<boolean>(() => localStorage.getItem('glow_onboarding_completed') === 'true');
   
   // Estados protegidos con array vacío por defecto
-  const [shoppingList, setShoppingList] = useState<ShoppingItem[]>(() => {
-    const saved = localStorage.getItem('glow_shopping_list');
-    return saved ? JSON.parse(saved) : [];
+ const [shoppingList, setShoppingList] = useState<ShoppingItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('glow_shopping_list');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
   });
 
   const [submissions, setSubmissions] = useState<UserSubmission[]>(() => {
-    const saved = localStorage.getItem('glow_submissions');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('glow_submissions');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
   });
+
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
-  try {
-    const saved = localStorage.getItem('glow_profile');
-    return saved ? JSON.parse(saved) : INITIAL_USER_PROFILE;
-  } catch { 
-    return INITIAL_USER_PROFILE; 
-  }
-});
+    try {
+      const saved = localStorage.getItem('glow_profile');
+      return saved ? JSON.parse(saved) : INITIAL_USER_PROFILE;
+    } catch { return INITIAL_USER_PROFILE; }
+  });
 
   useEffect(() => {
     localStorage.setItem('glow_onboarding_completed', String(onboardingCompleted));
@@ -55,7 +58,7 @@ export default function App() {
   }, [onboardingCompleted, shoppingList, submissions, userProfile]);
 
   // Protección para cálculos de filtros
-  const activeShoppingItems = (shoppingList || []).filter((item) => !item.completed).length;
+ const activeShoppingItems = (shoppingList ?? []).filter((item) => item && !item.completed).length;
 
   if (!onboardingCompleted) {
     return <OnboardingView onComplete={(data) => { setUserProfile(prev => ({...prev, ...data})); setOnboardingCompleted(true); }} onSkip={() => setOnboardingCompleted(true)} />;
