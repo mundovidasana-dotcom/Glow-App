@@ -23,7 +23,12 @@ import {
   Heart, CheckCircle2, Trash2, Users, FileText, Lock, Unlock, Menu, X, ArrowLeft, Shield,
   Trophy, Activity
 } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
 
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export default function App() {
   // Navigation states
   const [currentTab, setCurrentTab] = useState<'home' | 'challenge' | 'tracker' | 'search' | 'shopping' | 'community' | 'profile' | 'admin' | 'share'>('home');

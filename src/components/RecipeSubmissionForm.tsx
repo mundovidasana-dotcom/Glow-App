@@ -3,10 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { RecipeCategory } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShieldAlert, Plus, Trash2, CheckCircle, Camera, Upload, ArrowLeft } from 'lucide-react';
+import { ShieldAlert, Plus, Trash2, CheckCircle, Camera, Upload, ArrowLeft, Loader2 } from 'lucide-react';
+// IMPORTANTE: Asegúrate de tener tu cliente de supabase creado. 
+// Si tu archivo de configuración de supabase está en otro lado, ajusta esta ruta:
+import { supabase } from '../App'; 
 
 interface RecipeSubmissionFormProps {
   onSubmitSubmission: (submission: {
@@ -54,11 +57,17 @@ export const RecipeSubmissionForm: React.FC<RecipeSubmissionFormProps> = ({
   const [keyNutrient, setKeyNutrient] = useState('');
   const [whyAntiInflammatory, setWhyAntiInflammatory] = useState('');
   
-  // Dynamic arrays
+  // Archivo físico real seleccionado por el usuario
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Estados de carga y éxito
+  const [isIngredients, setIsIngredients] = useState<string[]>(['']);
   const [ingredients, setIngredients] = useState<string[]>(['']);
   const [prepSteps, setPrepSteps] = useState<string[]>(['']);
 
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
   // Dynamic ingredient handlers
@@ -112,15 +121,32 @@ export const RecipeSubmissionForm: React.FC<RecipeSubmissionFormProps> = ({
     setIsDragging(false);
   };
 
+  // Manejar cuando arrastran un archivo real dentro del cuadro
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    // Mimic picking the next preset image
-    const randomIndex = Math.floor(Math.random() * PRESET_CULINARY_PHOTOS.length);
-    setSelectedPhoto(PRESET_CULINARY_PHOTOS[randomIndex].url);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      setImageFile(file);
+      setSelectedPhoto(URL.createObjectURL(file));
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Manejar cuando hacen clic y seleccionan un archivo desde la ventana
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      setSelectedPhoto(URL.createObjectURL(file));
+    }
+  };
+
+  const handleBoxClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Filter out empty lines
@@ -142,23 +168,57 @@ export const RecipeSubmissionForm: React.FC<RecipeSubmissionFormProps> = ({
       return;
     }
 
-    // Submit payload
-    onSubmitSubmission({
-      title,
-      category,
-      image: selectedPhoto,
-      time,
-      difficulty,
-      keyNutrient: keyNutrient || 'Fitonutrientes activos',
-      whyAntiInflammatory: whyAntiInflammatory || 'Rico en compuestos fenólicos antiinflamatorios.',
-      ingredients: validIngredients,
-      preparation: validSteps
-    });
+    setIsSubmitting(true);
 
-    setIsSuccess(true);
-    setTimeout(() => {
-      onGoBack();
-    }, 2800);
+    try {
+      let finalImageUrl = selectedPhoto;
+
+      // SI EL USUARIO SUBIÓ UNA IMAGEN REAL: La mandamos directito a Supabase Storage
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        // Subir al bucket 'recipe-images'
+        const { error: uploadError } = await supabase.storage
+          .from('recipe-images')
+          .upload(filePath, imageFile);
+
+        if (uploadError) {
+          throw new Error(`Error al subir imagen: ${uploadError.message}`);
+        }
+
+        // Obtener la URL pública de la foto guardada
+        const { data: { publicUrl } } = supabase.storage
+          .from('recipe-images')
+          .getPublicUrl(filePath);
+
+        finalImageUrl = publicUrl;
+      }
+
+      // Enviar la información unificada con la URL real de la foto
+      onSubmitSubmission({
+        title,
+        category,
+        image: finalImageUrl,
+        time,
+        difficulty,
+        keyNutrient: keyNutrient || 'Fitonutrientes activos',
+        whyAntiInflammatory: whyAntiInflammatory || 'Rico en compuestos fenólicos antiinflamatorios.',
+        ingredients: validIngredients,
+        preparation: validSteps
+      });
+
+      setIsSuccess(true);
+      setTimeout(() => {
+        onGoBack();
+      }, 2800);
+
+    } catch (error: any) {
+      alert(error.message || 'Hubo un error al procesar tu receta.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -197,7 +257,7 @@ export const RecipeSubmissionForm: React.FC<RecipeSubmissionFormProps> = ({
             <div className="space-y-1.5">
               <h3 className="font-serif text-lg font-bold text-brand-dark">¡Receta enviada para revisión!</h3>
               <p className="text-xs text-brand-grey max-w-sm mx-auto leading-relaxed">
-                Tu receta ha entrado en la bandeja de aprobación del equipo nutricional de Glow. Te notificaremos en cuanto se valide. ¡Muchas gracias por aportar salud!
+                Tu receta ha entrado en la bandeja de aprobación del equipo nutritional de Glow. Te notificaremos en cuanto se valide. ¡Muchas gracias por aportar salud!
               </p>
             </div>
           </motion.div>
@@ -212,14 +272,23 @@ export const RecipeSubmissionForm: React.FC<RecipeSubmissionFormProps> = ({
               </p>
             </div>
 
-            {/* Photo Upload Box (drag and drop with tactile preview presets) */}
+            {/* Photo Upload Box */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-brand-dark uppercase tracking-wider block">Foto del platillo</label>
               
+              <input 
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                className="hidden"
+              />
+
               <div
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
+                onClick={handleBoxClick}
                 className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all relative overflow-hidden flex flex-col items-center justify-center min-h-[160px] cursor-pointer ${
                   isDragging 
                     ? 'border-brand-primary bg-brand-primary/5' 
@@ -235,30 +304,35 @@ export const RecipeSubmissionForm: React.FC<RecipeSubmissionFormProps> = ({
                     />
                     <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white p-4 space-y-2">
                       <Camera className="w-7 h-7 drop-shadow-xs" />
-                      <span className="text-[11px] font-bold tracking-wide">Foto Seleccionada (Arrastra otra o arrastra aquí)</span>
-                      <p className="text-[9px] opacity-95">Arrastra una imagen o pulsa los presets inferiores para cambiar</p>
+                      <span className="text-[11px] font-bold tracking-wide">
+                        {imageFile ? '¡Tu foto real está lista!' : 'Foto Seleccionada'}
+                      </span>
+                      <p className="text-[9px] opacity-95">Haz clic o arrastra una nueva imagen para cambiarla</p>
                     </div>
                   </>
                 ) : (
                   <div className="space-y-2">
                     <Upload className="w-8 h-8 text-brand-primary mx-auto" />
-                    <p className="text-xs font-semibold text-brand-dark">Arrastra e introduce una imagen de tu plato</p>
+                    <p className="text-xs font-semibold text-brand-dark">Arrastra o haz clic para subir la foto real de tu plato</p>
                     <p className="text-[10px] text-brand-grey">Soporta JPG, PNG de alta fidelidad nutricional</p>
                   </div>
                 )}
               </div>
 
-              {/* Presets Row to allow instant beautiful mock photo selection */}
+              {/* Presets Row */}
               <div className="space-y-1">
-                <span className="text-[10px] text-brand-grey font-bold uppercase tracking-wider block">Fotos recomendadas para simulación:</span>
+                <span className="text-[10px] text-brand-grey font-bold uppercase tracking-wider block">O usa una foto de simulación rápida:</span>
                 <div className="grid grid-cols-4 gap-2">
                   {PRESET_CULINARY_PHOTOS.map((ph, idx) => (
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => setSelectedPhoto(ph.url)}
+                      onClick={() => {
+                        setImageFile(null); // Resetea el archivo real si eligen un preset
+                        setSelectedPhoto(ph.url);
+                      }}
                       className={`h-11 rounded-lg overflow-hidden border-2 transition-all relative ${
-                        selectedPhoto === ph.url ? 'border-brand-primary scale-98 shadow-xs' : 'border-transparent opacity-80 hover:opacity-100'
+                        selectedPhoto === ph.url && !imageFile ? 'border-brand-primary scale-98 shadow-xs' : 'border-transparent opacity-80 hover:opacity-100'
                       }`}
                       title={ph.name}
                     >
@@ -443,9 +517,17 @@ export const RecipeSubmissionForm: React.FC<RecipeSubmissionFormProps> = ({
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-[#D4A373] hover:bg-[#c49261] text-white py-4 px-6 rounded-xl text-xs font-bold transition-all shadow-xs uppercase tracking-widest"
+              disabled={isSubmitting}
+              className="w-full bg-[#D4A373] hover:bg-[#c49261] text-white py-4 px-6 rounded-xl text-xs font-bold transition-all shadow-xs uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Enviar para Revisión
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Subiendo datos a la nube...
+                </>
+              ) : (
+                'Enviar para Revisión'
+              )}
             </button>
           </form>
         )}
