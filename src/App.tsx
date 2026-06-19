@@ -29,8 +29,15 @@ export default function App() {
   const [onboardingCompleted, setOnboardingCompleted] = useState<boolean>(() => localStorage.getItem('glow_onboarding_completed') === 'true');
   
   // Estados protegidos con array vacío por defecto
-  const [shoppingList, setShoppingList] = useState<ShoppingItem[]>(() => JSON.parse(localStorage.getItem('glow_shopping_list') || '[]'));
-  const [submissions, setSubmissions] = useState<UserSubmission[]>(() => JSON.parse(localStorage.getItem('glow_submissions') || '[]'));
+  const [shoppingList, setShoppingList] = useState<ShoppingItem[]>(() => {
+    const saved = localStorage.getItem('glow_shopping_list');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [submissions, setSubmissions] = useState<UserSubmission[]>(() => {
+    const saved = localStorage.getItem('glow_submissions');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [userProfile, setUserProfile] = useState<UserProfile>(() => JSON.parse(localStorage.getItem('glow_profile') || JSON.stringify(INITIAL_USER_PROFILE)));
 
   useEffect(() => {
