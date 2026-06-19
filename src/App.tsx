@@ -44,7 +44,7 @@ export default function App() {
   const [socialPosts, setSocialPosts] = useState<SocialPost[]>(INITIAL_SOCIAL_POSTS);
   const [submissions, setSubmissions] = useState<UserSubmission[]>(INITIAL_SUBMISSIONS);
 
-  // NUEVA LÓGICA DE CONEXIÓN A SUPABASE
+  // Lógica de conexión a Supabase
   useEffect(() => {
     async function loadUserData() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -67,9 +67,14 @@ export default function App() {
     loadUserData();
   }, []);
 
-  // ... (MANTEN TUS FUNCIONES DE ACCIONES AQUÍ: handleToggleSaveRecipe, handleAddPoints, etc.)
-  // Nota: Puedes copiar tus funciones originales desde tu archivo anterior aquí abajo.
-  // He acortado este bloque por espacio, pero asegúrate de mantener tus funciones.
+  // Funciones de control (añadidas para recuperar la funcionalidad)
+  const handleToggleSaveRecipe = (id: string) => {
+    setSavedRecipeIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const handleAddPoints = (amount: number) => {
+    setUserProfile(prev => ({ ...prev, points: prev.points + amount }));
+  };
 
   if (!onboardingCompleted) {
     return (
@@ -85,20 +90,31 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] text-brand-dark flex flex-col lg:flex-row font-sans antialiased overflow-x-hidden">
-      {/* Tu estructura de UI sigue igual, usa userProfile.name y userProfile.avatar */}
       <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-[#CDBCAC]/30 h-screen sticky top-0 px-5 py-6 justify-between shrink-0 z-40">
         <div className="space-y-6">
            <div className="flex items-center gap-3 bg-brand-bg/40 p-3 rounded-2xl border border-brand-subdued/40">
-            <img src={userProfile.avatar} alt="Avatar" className="w-9 h-9 rounded-full object-cover border border-brand-primary/20" referrerPolicy="no-referrer" />
+            <img src={userProfile.avatar} alt="Avatar" className="w-9 h-9 rounded-full object-cover border border-brand-primary/20" />
             <div className="min-w-0">
               <h4 className="text-xs font-bold text-brand-dark truncate">{userProfile.name}</h4>
             </div>
           </div>
-          {/* ... resto de tu navegación ... */}
+          {/* Navegación básica */}
+          <nav className="space-y-1">
+            <button onClick={() => setCurrentTab('home')} className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium hover:bg-brand-bg rounded-lg">
+              <Home size={18} /> Inicio
+            </button>
+            <button onClick={() => setCurrentTab('profile')} className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium hover:bg-brand-bg rounded-lg">
+              <User size={18} /> Perfil
+            </button>
+          </nav>
         </div>
       </aside>
-      
-      {/* ... (El resto de tu código de renderizado original) ... */}
+
+      <main className="flex-1 p-6">
+        {currentTab === 'home' && <DashboardView onRecipeSelect={(id) => { setSelectedRecipeId(id); setCurrentTab('search'); }} />}
+        {currentTab === 'profile' && <ProfileView user={userProfile} />}
+        {/* Aquí renderizarás tus otros componentes según el estado currentTab */}
+      </main>
     </div>
   );
 }
