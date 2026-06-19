@@ -80,7 +80,8 @@ export const SmartShoppingList: React.FC<SmartShoppingListProps> = ({
     '✨ Otros': []
   };
 
-  shoppingList.forEach(item => {
+ // Usamos safeList en lugar de shoppingList
+  safeList.forEach(item => {
     const computedCat = item.category || categorizeIngredient(item.ingredientName);
     if (groupedItems[computedCat]) {
       groupedItems[computedCat].push(item);
@@ -89,8 +90,11 @@ export const SmartShoppingList: React.FC<SmartShoppingListProps> = ({
     }
   });
 
-  const totalItems = shoppingList.length;
-  const completedItems = shoppingList.filter(i => i.completed).length;
+// Ajuste de seguridad: Si shoppingList es null o undefined, usamos un array vacío
+  const safeList = shoppingList || [];
+  
+  const totalItems = safeList.length;
+  const completedItems = safeList.filter(i => i.completed).length;
 
   // Build the text message for WhatsApp sharing
   const getWhatsAppShareLink = () => {
@@ -98,7 +102,7 @@ export const SmartShoppingList: React.FC<SmartShoppingListProps> = ({
     
     let hasContent = false;
     CATEGORY_HEADERS.forEach(cat => {
-      const items = groupedItems[cat];
+      const items = groupedItems[cat] || []; // Seguridad extra aquí también
       if (items && items.length > 0) {
         hasContent = true;
         text += `*${cat}*\n`;

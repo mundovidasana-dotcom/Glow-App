@@ -67,8 +67,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   // Get a few featured/new recipes
-  const featuredRecipes = recipes.filter(r => r.featured).slice(0, 4);
-
+ const featuredRecipes = (recipes || []).filter(r => r.featured).slice(0, 4);
   // Category card config
   const categoriesConfig: { category: RecipeCategory; title: string; icon: React.ReactNode; desc: string; bg: string }[] = [
     { 

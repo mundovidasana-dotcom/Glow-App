@@ -38,7 +38,14 @@ export default function App() {
     const saved = localStorage.getItem('glow_submissions');
     return saved ? JSON.parse(saved) : [];
   });
-  const [userProfile, setUserProfile] = useState<UserProfile>(() => JSON.parse(localStorage.getItem('glow_profile') || JSON.stringify(INITIAL_USER_PROFILE)));
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
+  try {
+    const saved = localStorage.getItem('glow_profile');
+    return saved ? JSON.parse(saved) : INITIAL_USER_PROFILE;
+  } catch { 
+    return INITIAL_USER_PROFILE; 
+  }
+});
 
   useEffect(() => {
     localStorage.setItem('glow_onboarding_completed', String(onboardingCompleted));
